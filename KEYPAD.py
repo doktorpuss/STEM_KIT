@@ -115,14 +115,4 @@ def waitKey():
             noKeyPressed =True
     
     return key
-
-try:
-    while True:
-        print("Wait for key press")
-        waitKey()
-except KeyboardInterrupt:
-    print("STOP")
-
-finally:
-    GPIO.cleanup()
         
