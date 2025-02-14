@@ -113,6 +113,15 @@ def waitKey():
         if state_row() == 0:
             #print("RELEASED")
             noKeyPressed =True
-    
+    delay(0.05)
     return key
         
+def readUntil(char):
+    key = ''
+    buffer = ""
+
+    while key != char :
+        buffer = buffer + key
+        key = waitKey()
+        
+    return buffer
