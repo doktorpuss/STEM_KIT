@@ -144,7 +144,7 @@ class MFRC522:
             
         if pin_rst == -1:
             if pin_mode == 11:
-                pin_rst = 38
+                pin_rst = 15
             else:
                 pin_rst = 38
             

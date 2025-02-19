@@ -1,58 +1,28 @@
-import RPi.GPIO as GPIO
-from mfrc522 import MFRC522
+import spidev  # Thư viện này được import nhưng không thực sự được sử dụng trực tiếp trong code của bạn
+from mfrc522 import SimpleMFRC522
 
-# Khởi tạo module RC522
-reader = MFRC522()
-previous_uid = [0,0,0,0,0]
-
-def read_card():
-    print("Đưa thẻ gần đầu đọc...")
-
-    while True:
-        # Kiểm tra có thẻ nào gần không
-        (status, tag_type) = reader.MFRC522_Request(reader.PICC_REQIDL)
-        if status != reader.MI_OK:
-            continue  # Không có thẻ nào
-
-        # Đọc UID của thẻ
-        (status, uid) = reader.MFRC522_Anticoll()
-        if status != reader.MI_OK:
-            continue
-        # if(uid == previous_uid):
-        #     continue
-
-        previous_uid = uid
-
-        print(f"UID của thẻ: {uid}")
-
-        # Chọn thẻ (trả về OK nếu thành công)
-        if reader.MFRC522_SelectTag(uid) != reader.MI_OK:
-            print("Lỗi chọn thẻ!")
-            continue
-
-        # Xác thực với sector 0 (dùng key mặc định)
-        key = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]  # Key mặc định
-        if reader.MFRC522_Auth(reader.PICC_AUTHENT1A, 8, key, uid) != reader.MI_OK:
-            print("Lỗi xác thực!")
-            continue
-
-        # Đọc dữ liệu từ block 8
-        # status, data = reader.MFRC522_Read(8)
-        # if status == reader.MI_OK:
-        #     print(f"Dữ liệu: {data}")
-        # else:
-        #     print("Lỗi đọc thẻ!")
-        for i in range(16) :
-            result = reader.MFRC522_Read(i)
-            print(f"Raw data[{i}]: {result}")
-
-        # Ngắt kết nối thẻ
-        reader.MFRC522_StopCrypto1()
-    
+reader = SimpleMFRC522()
+attemp = 5  # Số lần thử đọc lại khi thẻ vẫn còn
+prev = 0    # Biến lưu UID đã đọc (ban đầu đặt là 0)
 
 try:
-    read_card()
-except KeyboardInterrupt:
-    print("\nDừng chương trình.")
+    while True:
+        print("Waiting for card nearby")
+        uid, text = reader.read()  # Chờ và đọc thẻ (blocking)
+        if (prev != uid):
+            uid_hex = format(uid, 'X')
+            print(f"ID: {uid_hex}\n Text: {text}\n")
+            prev = uid  # Cập nhật UID đã đọc
+
+        while (uid == prev):  # Vòng lặp kiểm tra xem thẻ còn không
+            uid = reader.read_id_no_block()  # Thử đọc ID (không blocking)
+            while (not uid) and (attemp > 0):  # Nếu không đọc được và còn số lần thử
+                attemp = attemp - 1
+                uid = reader.read_id_no_block()  # Thử đọc lại
+            if (not uid) and (attemp <= 0):  # Nếu hết số lần thử
+                prev = 0  # Đặt prev về 0 để cho phép đọc thẻ mới
+            attemp = 5  # Đặt lại số lần thử
+
 finally:
-    GPIO.cleanup()
+    print("end")
+    #Thiếu GPIO.cleanup()
