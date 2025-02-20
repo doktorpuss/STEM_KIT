@@ -15,10 +15,14 @@ class SimpleMFRC522:
     self.READER = MFRC522()
   
   def read(self):
-      id, text = self.read_no_block()
-      while not id:
-          id, text = self.read_no_block()
-      return id, text
+    id, text = self.read_no_block()
+    attemp = 5
+    while (not id)  and (attemp > 0):
+        attemp = attemp - 1
+        id, text = self.read_no_block()
+    if (not id) and (attemp <= 0):
+        return None,None
+    return id, text
 
   def read_id(self):
     id = self.read_id_no_block()
@@ -75,8 +79,11 @@ class SimpleMFRC522:
       status = self.READER.MFRC522_Auth(self.READER.PICC_AUTHENT1A, self.SECTOR, self.KEY, uid)
       self.READER.MFRC522_Read(15)
       if status == self.READER.MI_OK:
-          data = bytearray()
-          data.extend(bytearray(text.ljust(len(self.BLOCK_ADDRS) * 16).encode('ascii')))
+          if isinstance(text,str) :
+            data = bytearray()
+            data.extend(bytearray(text.ljust(len(self.BLOCK_ADDRS) * 16).encode('ascii')))
+          elif isinstance(text,list):
+            data = bytearray(text)
           i = 0
           for block_num in self.BLOCK_ADDRS:
             self.READER.MFRC522_Write(block_num, data[(i*16):(i+1)*16])
