@@ -372,6 +372,8 @@ class MFRC522:
 
         if len(backData) == 16:
             self.logger.debug("Sector " + str(blockAddr) + " " + str(backData))
+            #print("Sector " + str(blockAddr) + " " + str(backData))
+            #print("backData type: " + str(type(backData)))
             return backData
         else:
             return None
