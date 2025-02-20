@@ -97,25 +97,3 @@ def read_full(uid):
 
 def write_block(blockAddr,msg):
     reader.write(msg)
-try:
-    print("Waiting for card")
-    while True:
-        uid = card_available()
-        if uid != None:
-            sector = read_full(uid)
-            for i in range(len(sector)):
-                print(f"SECTOR {i} :{sector[i]}")
-            print("\n\n=====================READ SECTOR=====================")
-
-            print(f"Sector 1: {read_sector(uid,1)}")
-            print("\n\n=====================READ BLOCKs=====================")
-
-            print(f"Block 8: {read_block(uid,8)}")
-            print(f"Block-3: {read_block(uid,-3)}")
-            print("\n\n=======================FINISH========================")
-            
-            halt_til_card_leaves(uid)
-
-finally:
-    print("end")
-    #Thiếu GPIO.cleanup()

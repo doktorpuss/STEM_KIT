@@ -76,7 +76,6 @@ def state_row():
 
 def state_col(row):
     while True:
-
         writePin(COL_3,LOW)
         delay(0.01)
         if(state_row() == 0):
@@ -94,6 +93,11 @@ def state_col(row):
         if(state_row() ==0):
             writePin(COL_1,HIGH)
             return 1
+        
+        #Nếu chưa xác định được cột thì lặp lại
+        writePin(COL_1,HIGH)
+        writePin(COL_2,HIGH)
+        writePin(COL_3,HIGH)
         
 def waitKey():
     writePin(COL_1,HIGH)
