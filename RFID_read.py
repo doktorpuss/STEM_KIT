@@ -34,17 +34,31 @@ def card_available():
     return recent_uid
 
 def read_block(uid,blockAddr):
+    #Kiểm tra tính hợp lệ của block
+    if (blockAddr > 63) or (blockAddr < 0):
+        return "UNAVAILABLE BLOCK"
+
     reader.BLOCK_ADDRS=[blockAddr]
     reader.SECTOR = (blockAddr // 4)*4 + 3
 
     id, text = reader.read()  # Đọc thẻ
 
     if(uid == id):
-        uid_hex = format(uid, 'X')
-        print(f"ID: {uid_hex}\nText: {text}\n")
+        return text
+    return "CARD LEFT BEFORE DONE READING"
 
 
 def read_sector(uid,sector):
+    #Đồng bộ hóa với ràng buộc: 
+    #   Sector 0 là sector trạng thái
+    #   Sector đầu là sector 1,
+    sector = sector - 1 
+
+    #Kiểm tra tính hợp lệ của sector
+    if (sector > 15) or (sector < 0):
+        return "UNAVAILABLE SECTOR"
+    
+    #Xác định sector's key và các block trong sector
     offset = sector*4
     reader.SECTOR = offset + 3
     if sector == 0:
@@ -55,18 +69,19 @@ def read_sector(uid,sector):
     id, text = reader.read()  # Đọc thẻ
 
     if(uid == id):
-        uid_hex = format(uid, 'X')
-        print(f"ID: {uid_hex}\nText: {text}\n")
+        return text
+    return "CARD LEFT BEFORE DONE READING"
 
 def read_full(uid):
+    buf=["LOSS"]
+
     reader.SECTOR = 0
     reader.BLOCK_ADDRS = [1,2]
     id, text = reader.read()  # Chờ và đọc thẻ (blocking)
     
     if(uid == id):
-        uid_hex = format(uid, 'X')
-        print(f"ID: {uid_hex}\nSECTOR: 0\t Text: {text}")
-
+        buf.append(text)
+        
         for i in range(16):
             if i!=0 :
                 offset = i*4
@@ -74,10 +89,11 @@ def read_full(uid):
                 reader.BLOCK_ADDRS = [offset , offset+1 , offset+2]
                 id, text = reader.read()
                 if(id == uid):
-                    print(f"SECTOR: {i}\t Text: {text}")    
+                    buf.append(text)  
                 else:
-                    print("CARD LEFT")
-                    return
+                    return buf
+        buf[0]="GOOD"  
+    return buf 
 
 def write_block(blockAddr,msg):
     reader.write(msg)
@@ -86,14 +102,16 @@ try:
     while True:
         uid = card_available()
         if uid != None:
-            read_full(uid)
+            sector = read_full(uid)
+            for i in range(len(sector)):
+                print(f"SECTOR {i} :{sector[i]}")
             print("\n\n=====================READ SECTOR=====================")
 
-            read_sector(uid,0)
+            print(f"Sector 1: {read_sector(uid,1)}")
             print("\n\n=====================READ BLOCKs=====================")
 
-            read_block(uid,8)
-            read_block(uid,9)
+            print(f"Block 8: {read_block(uid,8)}")
+            print(f"Block-3: {read_block(uid,-3)}")
             print("\n\n=======================FINISH========================")
             
             halt_til_card_leaves(uid)
