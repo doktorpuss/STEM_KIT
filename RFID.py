@@ -47,7 +47,6 @@ def read_block(uid,blockAddr):
         return text
     return "CARD LEFT BEFORE DONE READING"
 
-
 def read_sector(uid,sector):
     #Đồng bộ hóa với ràng buộc: 
     #   Sector 0 là sector trạng thái
@@ -95,5 +94,49 @@ def read_full(uid):
         buf[0]="GOOD"  
     return buf 
 
-def write_block(blockAddr,msg):
-    reader.write(msg)
+def read_all_adv(uid):
+    buf=["LOSS"]
+
+    reader.SECTOR = 0
+    reader.BLOCK_ADDRS = [0,1,2,3]
+    id, text = reader.read()  # Chờ và đọc thẻ (blocking)
+    
+    if(uid == id):
+        buf.append(text)
+        
+        for i in range(16):
+            if i!=0 :
+                offset = i*4
+                reader.SECTOR = offset + 3
+                reader.BLOCK_ADDRS = [offset , offset+1 , offset+2, offset + 3]
+                id, text = reader.read()
+                if(id == uid):
+                    buf.append(text)  
+                else:
+                    return buf
+        buf[0]="GOOD"  
+    return buf 
+
+def write_block(uid,blockAddr,msg):
+    #Kiểm tra tính hợp lệ của block
+    if (blockAddr > 63) or (blockAddr < 1) or (blockAddr == (blockAddr // 4)*4 + 3):
+        return "UNAVAILABLE BLOCK"
+    
+    #Kiểm tra có đúng thẻ không
+    id = reader.read_id_no_block()
+    attemp = 3
+    while (not id) and (attemp > 0):  # Nếu không đọc được và còn số lần thử
+        attemp = attemp - 1
+        id = reader.read_id_no_block()  # Thử đọc lại
+    if (not id) and (attemp <= 0):  # Nếu hết số lần thử
+        return "NO CARD DETECTED" #Thoát ra
+    
+    if (uid == id):
+        reader.BLOCK_ADDRS=[blockAddr]
+        reader.SECTOR = (blockAddr // 4)*4 + 3
+        print(f"block {reader.BLOCK_ADDRS} trailer {reader.SECTOR}")
+
+        reader.write(msg)
+    else:
+        return "WRONG CARD"
+    
