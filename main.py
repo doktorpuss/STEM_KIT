@@ -24,17 +24,27 @@ try:
     RGB.stop()
     FAN.on()
     BUZZER.off()
+    SEG7.clear()
+    SEG7.start()
+    # SEG7.dot_on()
     while True:
-        print(f"SW1: {SWITCH.read_switch(1)}\tSW2: {SWITCH.read_switch(2)}\tBT1: {BUTTON.read_button(1)}\tBT2: {BUTTON.read_button(2)}")
-        count += 1
-        delay(1)
-        if (count % 10) == 0:
-            FAN.on()
-            BUZZER.off()
-        elif (count % 10) == 5:
-            FAN.off()
-            BUZZER.on()
+        inputs = input().split()
+        if len(inputs) == 2:
+            SEG7.update(int(inputs[0]),int(inputs[1]))
+
+            if SEG7.DOTs[count] == 0:
+                SEG7.DOTs[count] = 1
+            else:
+                SEG7.DOTs[count] = 0
+            
+            count += 1
+            if count > 3:
+                count = 0
+            
+        else:
+            print("wrong format")
 except KeyboardInterrupt:
+    SEG7.stop()
     FAN.off()
     BUZZER.off()
     print("end")
@@ -42,12 +52,3 @@ except KeyboardInterrupt:
 finally:
     GPIO.cleanup()
 
-
-
-
-        # color(102,250,255)
-        # time.sleep(5)
-        # color(255,34,166)
-        # time.sleep(5)
-        # color(255,231,0)
-        # time.sleep(5)

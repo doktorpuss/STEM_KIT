@@ -1,3 +1,4 @@
+import DEVICE
 import threading
 import smbus
 import time
@@ -14,14 +15,20 @@ I2C_ADDR = 0x24
 
 # LEDs init
 LEDs = [0x1, 0x2, 0x4, 0x8]
-LED_value = [0, 0, 0, 0]
+LED_value = [-1,-1,-1,-1]
 LEDs_state = 0x0
+DOTs=[0,0,0,0]
 run_flag = False
 run_flag_lock = threading.Lock()  # Khóa đồng bộ cho run_flag
 # END LEDs init
 
 SEG7_lock = threading.Lock()  # Khóa đồng bộ cho LED_value và LEDs_state
 
+def dot_off():
+    DEVICE.set(DEVICE.DOT)
+
+def dot_on():
+    DEVICE.reset(DEVICE.DOT)
 
 def SEG7_multiplexing():
     global LED_value, LEDs, run_flag
@@ -36,7 +43,7 @@ def SEG7_multiplexing():
                 value = LED_value[led-1]
 
             set(value, led)
-            delay(0.005)
+            delay(0.0001)
             reset(led)
 
 # Tạo daemon thread cho Multiplexing
@@ -44,6 +51,9 @@ SEG7_thread = None
 
 def start():
     global run_flag, SEG7_thread
+
+    dot_off()
+
     with run_flag_lock:
         if run_flag:  # Tránh tạo thread mới nếu đã chạy
             print("\033[1;33mDaemon already running.\033[0m")
@@ -58,6 +68,9 @@ def start():
 
 def stop():
     global run_flag, SEG7_thread
+
+    dot_off()
+
     with run_flag_lock:
         if not run_flag:  # Kiểm tra nếu daemon đã dừng
             print("\033[1;33mDaemon is not running.\033[0m")
@@ -76,7 +89,7 @@ def clear():
 def update(num, led):
     global LED_value
 
-    if num > 9 or num < 0:
+    if num > 9 or num < -1:
         print("\033[1;33mINVALID VALUE\033[0m")
         return
 
@@ -101,17 +114,22 @@ def set(value, led):
     global LEDs_state
 
     if value > 9 or value < 0:
-        print("\033[1;33mINVALID VALUE\033[0m")
+        # print("\033[1;33mINVALID VALUE\033[0m")
+        bus.write_byte(I2C_ADDR, 0x00)
         return
 
     if led > 4 or led < 1:
         print("\033[1;33mINVALID LED\033[0m")
-        return
+        return  
+    
+    if DOTs[led - 1] == 1:
+        dot_on()
+    else:
+        dot_off()
 
     LEDs_state = LEDs_state | LEDs[led - 1]
     msg = ((value << 4) & 0xF0) | LEDs_state
     bus.write_byte(I2C_ADDR, msg)
-
 
 def reset(led):
     global LEDs_state
