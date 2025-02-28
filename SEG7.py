@@ -10,7 +10,7 @@ delay = time.sleep
 bus = smbus.SMBus(1)
 
 # Địa chỉ I2C của PCF điều khiển LED
-I2C_ADDR = 0x20
+I2C_ADDR = 0x24
 
 # LEDs init
 LEDs = [0x1, 0x2, 0x4, 0x8]
