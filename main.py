@@ -1,5 +1,5 @@
 import RPi.GPIO as GPIO
-# import LCD
+import LCD
 import SONAR
 #import KEYPAD
 import SERVO
@@ -22,28 +22,29 @@ try:
     LEDs.clear()
     SERVO.stop()
     RGB.stop()
-    FAN.on()
+    FAN.off()
     BUZZER.off()
     SEG7.clear()
-    SEG7.start()
-    # SEG7.dot_on()
-    while True:
-        inputs = input().split()
-        if len(inputs) == 2:
-            SEG7.update(int(inputs[0]),int(inputs[1]))
+    SEG7.stop()
+    LCD.noBacklight()
 
-            if SEG7.DOTs[count] == 0:
-                SEG7.DOTs[count] = 1
-            else:
-                SEG7.DOTs[count] = 0
-            
-            count += 1
-            if count > 3:
-                count = 0
-            
-        else:
-            print("wrong format")
+    # the example truely start from here
+    LCD.begin()
+    LCD.setCursor(0,0)
+    LCD.print("Hello")
+    LCD.setCursor(0,1)
+    LCD.print(1234)
+    LCD.print(" ")
+    LCD.print(5678)
+    while True:
+        LCD.noBacklight()
+        delay(1)
+        LCD.backlight()
+        delay(2)
+
 except KeyboardInterrupt:
+    LCD.noBacklight()
+    LCD.clear()
     SEG7.stop()
     FAN.off()
     BUZZER.off()

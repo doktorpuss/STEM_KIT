@@ -40,7 +40,7 @@ def lcd_toggle_enable(bits):
     time.sleep(0.0005)
 
 # Hàm khởi tạo LCD
-def lcd_init():
+def begin():
     lcd_byte(0x33, LCD_CMD)  # Chế độ 4-bit
     lcd_byte(0x32, LCD_CMD)  # Chế độ 4-bit
     lcd_byte(0x06, LCD_CMD)  # Đặt con trỏ tăng
@@ -49,6 +49,7 @@ def lcd_init():
     lcd_byte(0x01, LCD_CMD)  # Xóa màn hình
     time.sleep(0.005)
 
+    
 # Hàm hiển thị văn bản trên LCD
 def lcd_string(message, line):
     message = message.ljust(LCD_WIDTH, " ")
@@ -56,18 +57,27 @@ def lcd_string(message, line):
     for char in message:
         lcd_byte(ord(char), LCD_CHR)
 
-# Chương trình chính
-try:
-    lcd_init()
-    lcd_string("Hello, World!", LCD_LINE_1)
-    lcd_string("Raspberry Pi", LCD_LINE_2)
-    time.sleep(3)
+def backlight():
+    global LCD_BACKLIGHT
+    LCD_BACKLIGHT = 0x08
+    bus.write_byte(I2C_ADDR,LCD_BACKLIGHT)
 
-    while True:
-        lcd_string("Updating...", LCD_LINE_1)
-        lcd_string("LCD Demo", LCD_LINE_2)
-        time.sleep(2)
+def noBacklight():
+    global LCD_BACKLIGHT
+    LCD_BACKLIGHT = 0x00
+    bus.write_byte(I2C_ADDR,LCD_BACKLIGHT)
 
-except KeyboardInterrupt:
-    print("Exiting program...")
+def setCursor(col,row):
+    if row == 0 :
+        cursor = LCD_LINE_1 + col
+    elif row == 1:
+        cursor = LCD_LINE_2 + col
+    lcd_byte(cursor, LCD_CMD)
+
+def clear():
     lcd_byte(0x01, LCD_CMD)  # Xóa màn hình
+
+def print(data):
+    data = str(data)  # Chuyển đổi dữ liệu sang chuỗi nếu không phải string
+    for char in data:
+        lcd_byte(ord(char), LCD_CHR)
