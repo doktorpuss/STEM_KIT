@@ -30,6 +30,10 @@ def dot_off():
 def dot_on():
     DEVICE.reset(DEVICE.DOT)
 
+def dot_update(led,mode):
+    global DOTs
+    DOTs[led - 1] = mode
+
 def SEG7_multiplexing():
     global LED_value, LEDs, run_flag
     print("\033[1;33mDaemon started\033[0m")
@@ -111,21 +115,20 @@ def req(led, val, mode):
 
 
 def set(value, led):
-    global LEDs_state
+    global LEDs_state,DOTs
 
-    if value > 9 or value < 0:
-        # print("\033[1;33mINVALID VALUE\033[0m")
-        bus.write_byte(I2C_ADDR, 0x00)
-        return
-
-    if led > 4 or led < 1:
-        print("\033[1;33mINVALID LED\033[0m")
-        return  
-    
     if DOTs[led - 1] == 1:
         dot_on()
     else:
         dot_off()
+
+    if value > 9 or value < 0:
+        # print("\033[1;33mINVALID VALUE\033[0m")
+        return
+
+    if led > 4 or led < 1:
+        #print("\033[1;33mINVALID LED\033[0m")
+        return  
 
     LEDs_state = LEDs_state | LEDs[led - 1]
     msg = ((value << 4) & 0xF0) | LEDs_state
