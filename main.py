@@ -1,14 +1,18 @@
-import SEG7
+import KEYPAD
+import time
 
-SEG7.start()
-SEG7.dot_update(1,1)
-SEG7.update(1,1)
+KEYPAD.start()  # Bắt đầu tiến trình đọc phím
 
 try:
     while True:
-        pass
+        data = KEYPAD.readBuffer()
+        # data = KEYPAD.waitKey()
+        # data = KEYPAD.readUntil('#')
+        if data:
+            print(f"Received: {data}")
+        print("time")
+        time.sleep(2)
 
 except KeyboardInterrupt:
-    SEG7.stop()
-finally:
-    SEG7.stop()
+    KEYPAD.stop()  # Dừng tiến trình khi thoát chương trình
+    print("\nStopped reading keypad.")

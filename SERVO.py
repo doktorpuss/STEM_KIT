@@ -18,5 +18,6 @@ def stop():
     pwm.stop()
 
 def angle(angle):
-    DUTY_CYCLE = round((((angle/180)+1)/20)*100)
+    # DUTY_CYCLE = round(((angle/180)*20+1)*100)
+    DUTY_CYCLE = 1.7 + (angle/180)*9.6
     pwm.ChangeDutyCycle(DUTY_CYCLE)

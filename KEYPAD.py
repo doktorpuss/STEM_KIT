@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+import threading
 
 # Alias for GPIO
 pinMode = GPIO.setup
@@ -45,9 +46,12 @@ keymap=[['1','2','3',],
         ['7','8','9',],
         ['*','0','#',]]
 
-def raise_col(col):
-    global COL_1,COL_2,COL_3
+buffer = ""
+buffer_lock = threading.Lock()
+process = None
+running = False
 
+def raise_col(col):
     if col==COL_1:
         writePin(COL_1,HIGH)
         writePin(COL_2,LOW)
@@ -62,8 +66,6 @@ def raise_col(col):
         writePin(COL_1,LOW)
 
 def state_row():
-    global ROW_1,ROW_2,ROW_3,ROW_4
-
     if readPin(ROW_1):
         return 1
     if readPin(ROW_2):
@@ -99,6 +101,7 @@ def state_col(row):
         writePin(COL_2,HIGH)
         writePin(COL_3,HIGH)
         
+
 def waitKey():
     writePin(COL_1,HIGH)
     writePin(COL_2,HIGH)
@@ -111,21 +114,50 @@ def waitKey():
             noKeyPressed = False
             col = state_col(row)
             key = keymap[row-1][col-1]
-            #print(f"KEY {key} PRESSED")
     
     while not noKeyPressed:
         if state_row() == 0:
-            #print("RELEASED")
-            noKeyPressed =True
+            noKeyPressed = True
     delay(0.05)
     return key
         
+
 def readUntil(char):
     key = ''
-    buffer = ""
+    local_buffer = ""
 
-    while key != char :
-        buffer = buffer + key
+    while key != char:
+        local_buffer += key
         key = waitKey()
         
-    return buffer
+    return local_buffer
+
+def keypad_process(end_char):
+    global buffer, running
+    while running:
+        key = waitKey() if end_char == '' else readUntil(end_char)
+        with buffer_lock:
+            buffer += key
+
+def start(end_char=''):
+    global process, running
+    if process is None or not process.is_alive():
+        running = True
+        process = threading.Thread(target=keypad_process, args=(end_char,), daemon=True)
+        process.start()
+
+def stop():
+    global running
+    running = False
+
+def available():
+    global buffer
+    with buffer_lock:
+        return len(buffer) > 0
+
+def readBuffer():
+    global buffer
+    with buffer_lock:
+        data = buffer
+        buffer = ""  # Xóa buffer sau khi đọc
+    return data

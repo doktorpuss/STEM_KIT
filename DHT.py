@@ -1,24 +1,22 @@
-import adafruit_dht
-import board
-import time
+TEMP_FILE = "/home/pi/Documents/code/temperature.txt"
+HUM_FILE = "/home/pi/Documents/code/humidity.txt"
 
-# Khởi tạo cảm biến DHT11 (hoặc DHT22 nếu bạn sử dụng cảm biến này)
-dhtDevice = adafruit_dht.DHT11(board.D26)  # Thay D26 bằng chân GPIO bạn dùng
-
-def Temperature():
+def temperature():
     try:
-        Temp = dhtDevice.temperature
-    except RuntimeError as error:
-            # Errors happen fairly often, DHT's are hard to read, just keep going
-            print("\033[1;31mHTemperature failed\033[0m")
-            print(error.args[0])
-    return Temp
+        with open(TEMP_FILE, "r+") as file:
+            data = file.read().strip()
+            file.seek(0)
+            file.truncate(0)  # Xóa nội dung file sau khi đọc
+            return float(data) if data else 0.0
+    except (FileNotFoundError, ValueError):
+        return 0.0
 
-def Humidity():
+def humidity():
     try:
-        Humid = dhtDevice.humidity
-    except RuntimeError as error:
-            # Errors happen fairly often, DHT's are hard to read, just keep going
-            print("\033[1;31mHumidity failed\033[0m")
-            print(error.args[0])
-    return Humid
+        with open(HUM_FILE, "r+") as file:
+            data = file.read().strip()
+            file.seek(0)
+            file.truncate(0)  # Xóa nội dung file sau khi đọc
+            return float(data) if data else 0.0
+    except (FileNotFoundError, ValueError):
+        return 0.0
