@@ -1,0 +1,4 @@
+  File "C:\Users\ADMIN\OneDrive\Documents\university\grad\project\lib\STEM_KIT\generated_script.py", line 4
+    print('ss')
+    ^
+IndentationError: expected an indented block after 'for' statement on line 2
