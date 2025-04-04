@@ -6,6 +6,7 @@ TRIG = 16  # Chân Trigger
 ECHO = 6   # Chân Echo
 
 # Cấu hình GPIO
+GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(TRIG, GPIO.OUT)
 GPIO.setup(ECHO, GPIO.IN)
@@ -17,12 +18,11 @@ def distance():
     GPIO.output(TRIG, False)
 
     # Đợi Echo lên mức cao
-    start_time = time.time()
     while GPIO.input(ECHO) == 0:
-        start_time = time.time()
+        pass
 
     # Đợi Echo xuống mức thấp
-    stop_time = time.time()
+    start_time = time.time()
     while GPIO.input(ECHO) == 1:
         stop_time = time.time()
 

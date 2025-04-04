@@ -1,17 +1,19 @@
-#import LCD
-import SONAR
-import KEYPAD
-import LEDs
+import archive.KEYPAD_pure as KEYPAD_pure
 import time
 
-# Alias for time
-delay = time.sleep
+KEYPAD_pure.start()  # Bắt đầu tiến trình đọc phím
 
 try:
-    print("START")
     while True:
-        print(f"Number {KEYPAD.waitUntil('#')} ENTER")
+        data = KEYPAD_pure.readBuffer()
+        # data = KEYPAD.waitKey()
+        # data = KEYPAD.readUntil('#')
+        if data:
+            print(f"Received: {data}")
+        print("time")
+        time.sleep(1)
 
 except KeyboardInterrupt:
-    print("END")
+    KEYPAD_pure.stop()  # Dừng tiến trình khi thoát chương trình
+    print("\nStopped reading keypad.")
 

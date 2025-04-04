@@ -115,17 +115,9 @@ def waitKey():
             col = state_col(row)
             key = keymap[row-1][col-1]
     
-    
     while not noKeyPressed:
-        temp_start = time.time()
-        temp_state = False
-        while ((time.time() - temp_start) < 0.001 ):    
-            if state_row() != 0:
-                temp_state = True
-        # print(temp_state)
-        if temp_state == False:
+        if state_row() == 0:
             noKeyPressed = True
-            
     delay(0.05)
     return key
         
