@@ -1,2 +1,7 @@
 cmd.txt
 error.log
+Audio_processing
+basicGPIO.py
+temp.py
+RFID_write.py
+**.wav
