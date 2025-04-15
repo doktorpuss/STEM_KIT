@@ -59,12 +59,12 @@ def lcd_string(message, line):
 
 def backlight():
     global LCD_BACKLIGHT
-    LCD_BACKLIGHT = 0x08
+    LCD_BACKLIGHT = 0x00
     bus.write_byte(I2C_ADDR,LCD_BACKLIGHT)
 
 def noBacklight():
     global LCD_BACKLIGHT
-    LCD_BACKLIGHT = 0x00
+    LCD_BACKLIGHT = 0x08
     bus.write_byte(I2C_ADDR,LCD_BACKLIGHT)
 
 def setCursor(col,row):
